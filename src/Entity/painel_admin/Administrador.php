@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\painel_admin;
 
-use App\Repository\AdministradorRepository;
+use App\Repository\painel_admin\Administrador_Repository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity(repositoryClass: AdministradorRepository::class)]
+#[ORM\Entity(repositoryClass: Administrador_Repository::class)]
 #[ORM\Table(name: 'administrador')]
-class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
+#[ORM\HasLifecycleCallbacks]
+class Administrador implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -37,12 +37,6 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
 
-    public function __construct()
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTimeImmutable();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -53,9 +47,10 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->nome;
     }
 
-    public function setNome(string $nome): self
+    public function setNome(string $nome): static
     {
         $this->nome = $nome;
+
         return $this;
     }
 
@@ -64,20 +59,22 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
-    public function getPasswordHash(): ?string
+    public function getPassword(): ?string
     {
         return $this->password_hash;
     }
 
-    public function setPasswordHash(string $password_hash): self
+    public function setPassword(string $password): static
     {
-        $this->password_hash = $password_hash;
+        $this->password_hash = $password;
+
         return $this;
     }
 
@@ -86,9 +83,10 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -97,9 +95,10 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->ultimo_login_em;
     }
 
-    public function setUltimoLoginEm(?\DateTimeImmutable $ultimo_login_em): self
+    public function setUltimoLoginEm(?\DateTimeImmutable $ultimo_login_em): static
     {
         $this->ultimo_login_em = $ultimo_login_em;
+
         return $this;
     }
 
@@ -113,30 +112,21 @@ class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): self
+    #[ORM\PrePersist]
+    public function prePersist(): void
     {
-        $this->updated_at = $updated_at;
-        return $this;
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
     }
 
-    // UserInterface methods
-    public function getUserIdentifier(): string
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
     {
-        return $this->email;
+        $this->updated_at = new \DateTimeImmutable();
     }
 
-    public function getRoles(): array
+    public function registrarLogin(): void
     {
-        return ['ROLE_ADMIN'];
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password_hash;
-    }
-
-    public function eraseCredentials(): void
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
+        $this->ultimo_login_em = new \DateTimeImmutable();
     }
 }
