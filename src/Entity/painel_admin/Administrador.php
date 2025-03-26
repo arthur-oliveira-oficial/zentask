@@ -5,11 +5,12 @@ namespace App\Entity\painel_admin;
 use App\Repository\painel_admin\Administrador_Repository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: Administrador_Repository::class)]
 #[ORM\Table(name: 'administrador')]
 #[ORM\HasLifecycleCallbacks]
-class Administrador implements PasswordAuthenticatedUserInterface
+class Administrador implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -128,5 +129,20 @@ class Administrador implements PasswordAuthenticatedUserInterface
     public function registrarLogin(): void
     {
         $this->ultimo_login_em = new \DateTimeImmutable();
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_ADMIN'];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Se necessário, limpe dados sensíveis aqui
     }
 }
