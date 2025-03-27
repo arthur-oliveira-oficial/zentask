@@ -85,17 +85,8 @@ class LoginPainelAdmin extends AbstractController
         // Gerar o token JWT
         $token = $this->jwtManager->create($administrador);
 
-        // Retornar o token e as informações do administrador
-        return $this->json([
-            'status' => 'success',
-            'message' => 'Login realizado com sucesso',
-            'token' => $token,
-            'user' => [
-                'id' => $administrador->getId(),
-                'nome' => $administrador->getNome(),
-                'email' => $administrador->getEmail()
-            ]
-        ]);
+        // Retornar apenas o token
+        return $this->json($token);
     }
 
     #[Route('/check-token', name: 'admin_check_token', methods: ['GET'])]
