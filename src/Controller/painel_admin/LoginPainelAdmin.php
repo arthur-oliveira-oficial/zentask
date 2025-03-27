@@ -15,7 +15,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/painel/admin')]
+#[Route('/api/painel')]
 class LoginPainelAdmin extends AbstractController
 {
     private EntityManagerInterface $entityManager;
