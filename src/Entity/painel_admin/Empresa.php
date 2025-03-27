@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\painel_admin;
 
-use App\Repository\EmpresaRepository;
+use App\Repository\painel_admin\Empresa_Repository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: EmpresaRepository::class)]
+#[ORM\Entity(repositoryClass: Empresa_Repository::class)]
 #[ORM\Table(name: 'empresas')]
+#[ORM\HasLifecycleCallbacks]
 class Empresa
 {
     #[ORM\Id]
@@ -29,9 +30,9 @@ class Empresa
     #[ORM\Column(length: 255)]
     private ?string $senha_db = null;
 
-    #[ORM\ManyToOne(inversedBy: 'empresas')]
+    #[ORM\ManyToOne(targetEntity: PlanoDePagamento::class)]
     #[ORM\JoinColumn(name: 'plano_de_pagamento_id', referencedColumnName: 'id', nullable: false)]
-    private ?PlanoDePagamento $planoDePagamento = null;
+    private ?PlanoDePagamento $plano_de_pagamento = null;
 
     #[ORM\Column(length: 20, options: ["default" => "pendente"])]
     private ?string $status = 'pendente';
@@ -50,8 +51,6 @@ class Empresa
 
     public function __construct()
     {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTimeImmutable();
         $this->historicoDePagamentos = new ArrayCollection();
     }
 
@@ -65,9 +64,10 @@ class Empresa
         return $this->nome;
     }
 
-    public function setNome(string $nome): self
+    public function setNome(string $nome): static
     {
         $this->nome = $nome;
+
         return $this;
     }
 
@@ -76,9 +76,10 @@ class Empresa
         return $this->host_db;
     }
 
-    public function setHostDb(string $host_db): self
+    public function setHostDb(string $host_db): static
     {
         $this->host_db = $host_db;
+
         return $this;
     }
 
@@ -87,9 +88,10 @@ class Empresa
         return $this->usuario_db;
     }
 
-    public function setUsuarioDb(string $usuario_db): self
+    public function setUsuarioDb(string $usuario_db): static
     {
         $this->usuario_db = $usuario_db;
+
         return $this;
     }
 
@@ -98,20 +100,22 @@ class Empresa
         return $this->senha_db;
     }
 
-    public function setSenhaDb(string $senha_db): self
+    public function setSenhaDb(string $senha_db): static
     {
         $this->senha_db = $senha_db;
+
         return $this;
     }
 
     public function getPlanoDePagamento(): ?PlanoDePagamento
     {
-        return $this->planoDePagamento;
+        return $this->plano_de_pagamento;
     }
 
-    public function setPlanoDePagamento(?PlanoDePagamento $planoDePagamento): self
+    public function setPlanoDePagamento(?PlanoDePagamento $plano_de_pagamento): static
     {
-        $this->planoDePagamento = $planoDePagamento;
+        $this->plano_de_pagamento = $plano_de_pagamento;
+
         return $this;
     }
 
@@ -120,9 +124,10 @@ class Empresa
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -131,9 +136,10 @@ class Empresa
         return $this->data_de_expiracao_plano;
     }
 
-    public function setDataDeExpiracaoPlano(?\DateTimeInterface $data_de_expiracao_plano): self
+    public function setDataDeExpiracaoPlano(?\DateTimeInterface $data_de_expiracao_plano): static
     {
         $this->data_de_expiracao_plano = $data_de_expiracao_plano;
+
         return $this;
     }
 
@@ -147,17 +153,46 @@ class Empresa
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): self
-    {
-        $this->updated_at = $updated_at;
-        return $this;
-    }
-
     /**
      * @return Collection<int, HistoricoDePagamento>
      */
     public function getHistoricoDePagamentos(): Collection
     {
         return $this->historicoDePagamentos;
+    }
+
+    public function addHistoricoDePagamento(HistoricoDePagamento $historicoDePagamento): static
+    {
+        if (!$this->historicoDePagamentos->contains($historicoDePagamento)) {
+            $this->historicoDePagamentos->add($historicoDePagamento);
+            $historicoDePagamento->setEmpresa($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHistoricoDePagamento(HistoricoDePagamento $historicoDePagamento): static
+    {
+        if ($this->historicoDePagamentos->removeElement($historicoDePagamento)) {
+            // set the owning side to null (unless already changed)
+            if ($historicoDePagamento->getEmpresa() === $this) {
+                $historicoDePagamento->setEmpresa(null);
+            }
+        }
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function prePersist(): void
+    {
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
+    {
+        $this->updated_at = new \DateTimeImmutable();
     }
 }

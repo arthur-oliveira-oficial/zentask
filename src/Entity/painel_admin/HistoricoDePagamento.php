@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\painel_admin;
 
-use App\Repository\HistoricoDePagamentoRepository;
+use App\Repository\painel_admin\HistoricoDePagamento_Repository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: HistoricoDePagamentoRepository::class)]
+#[ORM\Entity(repositoryClass: HistoricoDePagamento_Repository::class)]
 #[ORM\Table(name: 'historico_de_pagamentos')]
+#[ORM\HasLifecycleCallbacks]
 class HistoricoDePagamento
 {
     #[ORM\Id]
@@ -19,9 +20,9 @@ class HistoricoDePagamento
     #[ORM\JoinColumn(name: 'empresa_id', referencedColumnName: 'id', nullable: false)]
     private ?Empresa $empresa = null;
 
-    #[ORM\ManyToOne(inversedBy: 'historicoDePagamentos')]
+    #[ORM\ManyToOne(targetEntity: PlanoDePagamento::class)]
     #[ORM\JoinColumn(name: 'plano_de_pagamento_id', referencedColumnName: 'id', nullable: false)]
-    private ?PlanoDePagamento $planoDePagamento = null;
+    private ?PlanoDePagamento $plano_de_pagamento = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $data_pagamento = null;
@@ -44,12 +45,6 @@ class HistoricoDePagamento
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
 
-    public function __construct()
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTimeImmutable();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -60,20 +55,22 @@ class HistoricoDePagamento
         return $this->empresa;
     }
 
-    public function setEmpresa(?Empresa $empresa): self
+    public function setEmpresa(?Empresa $empresa): static
     {
         $this->empresa = $empresa;
+
         return $this;
     }
 
     public function getPlanoDePagamento(): ?PlanoDePagamento
     {
-        return $this->planoDePagamento;
+        return $this->plano_de_pagamento;
     }
 
-    public function setPlanoDePagamento(?PlanoDePagamento $planoDePagamento): self
+    public function setPlanoDePagamento(?PlanoDePagamento $plano_de_pagamento): static
     {
-        $this->planoDePagamento = $planoDePagamento;
+        $this->plano_de_pagamento = $plano_de_pagamento;
+
         return $this;
     }
 
@@ -82,9 +79,10 @@ class HistoricoDePagamento
         return $this->data_pagamento;
     }
 
-    public function setDataPagamento(\DateTimeInterface $data_pagamento): self
+    public function setDataPagamento(\DateTimeInterface $data_pagamento): static
     {
         $this->data_pagamento = $data_pagamento;
+
         return $this;
     }
 
@@ -93,9 +91,10 @@ class HistoricoDePagamento
         return $this->valor_pago;
     }
 
-    public function setValorPago(string $valor_pago): self
+    public function setValorPago(string $valor_pago): static
     {
         $this->valor_pago = $valor_pago;
+
         return $this;
     }
 
@@ -104,9 +103,10 @@ class HistoricoDePagamento
         return $this->metodo_pagamento;
     }
 
-    public function setMetodoPagamento(string $metodo_pagamento): self
+    public function setMetodoPagamento(string $metodo_pagamento): static
     {
         $this->metodo_pagamento = $metodo_pagamento;
+
         return $this;
     }
 
@@ -115,9 +115,10 @@ class HistoricoDePagamento
         return $this->status_pagamento;
     }
 
-    public function setStatusPagamento(string $status_pagamento): self
+    public function setStatusPagamento(string $status_pagamento): static
     {
         $this->status_pagamento = $status_pagamento;
+
         return $this;
     }
 
@@ -126,9 +127,10 @@ class HistoricoDePagamento
         return $this->transacao_id;
     }
 
-    public function setTransacaoId(?string $transacao_id): self
+    public function setTransacaoId(?string $transacao_id): static
     {
         $this->transacao_id = $transacao_id;
+
         return $this;
     }
 
@@ -142,9 +144,16 @@ class HistoricoDePagamento
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): self
+    #[ORM\PrePersist]
+    public function prePersist(): void
     {
-        $this->updated_at = $updated_at;
-        return $this;
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
+    {
+        $this->updated_at = new \DateTimeImmutable();
     }
 }

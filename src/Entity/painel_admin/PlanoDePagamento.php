@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\painel_admin;
 
-use App\Repository\PlanoDePagamentoRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
+use App\Repository\painel_admin\PlanoDePagamento_Repository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: PlanoDePagamentoRepository::class)]
+#[ORM\Entity(repositoryClass: PlanoDePagamento_Repository::class)]
 #[ORM\Table(name: 'planos_de_pagamento')]
+#[ORM\HasLifecycleCallbacks]
 class PlanoDePagamento
 {
     #[ORM\Id]
@@ -20,16 +18,16 @@ class PlanoDePagamento
     #[ORM\Column(length: 255, unique: true)]
     private ?string $nome = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $descricao = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     private ?string $preco = null;
 
     #[ORM\Column(length: 20)]
     private ?string $periodicidade = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $recursos = null;
 
     #[ORM\Column]
@@ -37,20 +35,6 @@ class PlanoDePagamento
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
-
-    #[ORM\OneToMany(mappedBy: 'planoDePagamento', targetEntity: Empresa::class)]
-    private Collection $empresas;
-
-    #[ORM\OneToMany(mappedBy: 'planoDePagamento', targetEntity: HistoricoDePagamento::class)]
-    private Collection $historicoDePagamentos;
-
-    public function __construct()
-    {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new \DateTimeImmutable();
-        $this->empresas = new ArrayCollection();
-        $this->historicoDePagamentos = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -62,9 +46,10 @@ class PlanoDePagamento
         return $this->nome;
     }
 
-    public function setNome(string $nome): self
+    public function setNome(string $nome): static
     {
         $this->nome = $nome;
+
         return $this;
     }
 
@@ -73,9 +58,10 @@ class PlanoDePagamento
         return $this->descricao;
     }
 
-    public function setDescricao(?string $descricao): self
+    public function setDescricao(?string $descricao): static
     {
         $this->descricao = $descricao;
+
         return $this;
     }
 
@@ -84,9 +70,10 @@ class PlanoDePagamento
         return $this->preco;
     }
 
-    public function setPreco(string $preco): self
+    public function setPreco(string $preco): static
     {
         $this->preco = $preco;
+
         return $this;
     }
 
@@ -95,9 +82,10 @@ class PlanoDePagamento
         return $this->periodicidade;
     }
 
-    public function setPeriodicidade(string $periodicidade): self
+    public function setPeriodicidade(string $periodicidade): static
     {
         $this->periodicidade = $periodicidade;
+
         return $this;
     }
 
@@ -106,9 +94,10 @@ class PlanoDePagamento
         return $this->recursos;
     }
 
-    public function setRecursos(?string $recursos): self
+    public function setRecursos(?string $recursos): static
     {
         $this->recursos = $recursos;
+
         return $this;
     }
 
@@ -122,25 +111,16 @@ class PlanoDePagamento
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTimeImmutable $updated_at): self
+    #[ORM\PrePersist]
+    public function prePersist(): void
     {
-        $this->updated_at = $updated_at;
-        return $this;
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
     }
 
-    /**
-     * @return Collection<int, Empresa>
-     */
-    public function getEmpresas(): Collection
+    #[ORM\PreUpdate]
+    public function preUpdate(): void
     {
-        return $this->empresas;
-    }
-
-    /**
-     * @return Collection<int, HistoricoDePagamento>
-     */
-    public function getHistoricoDePagamentos(): Collection
-    {
-        return $this->historicoDePagamentos;
+        $this->updated_at = new \DateTimeImmutable();
     }
 }
