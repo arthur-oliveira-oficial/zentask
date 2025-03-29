@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\painel_admin\Administrador;
+use App\Entity\PainelAdmin\Administrador;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
